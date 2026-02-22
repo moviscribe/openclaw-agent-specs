@@ -1,5 +1,69 @@
 # OpenClaw Breadcrumb System — Complete Specification
 
+*Version: 3.2 | Spec ID: `openclaw-breadcrumb-system`*
+
+---
+
+## v3.2 — 2026-02-22
+
+**NEW: Gap Detection in Breadcrumb Baker**
+
+The Baker now includes a fourth phase: Gap Detection.
+
+### What It Does
+
+After baking (Discover → Validate → Index), the Baker scans the workspace for new components that lack breadcrumbs.
+
+### Scan Targets
+
+| Target Type | Location Pattern | Requires Crumb? |
+|-------------|-----------------|----------------|
+| Scripts | `~/.openclaw/workspace/**/*.sh` | Yes |
+| Agent folders | `~/.openclaw/workspace/agents/*/SOUL.md` | Yes |
+| Service configs | `~/.openclaw/workspace/docs/integrations/*.crumb.md` | Yes |
+| Skills | `~/.openclaw/workspace/skills/*/SKILL.md` | Yes |
+| Pages | `~/.openclaw/workspace/bobworld/src/app/*/page.tsx` | Yes |
+| APIs | `~/.openclaw/workspace/bobworld/src/app/api/*/route.ts` | Yes |
+
+### Gap Detection Process
+
+1. **Scan** — Find all files matching target patterns
+2. **Check** — For each file, check if a corresponding `.crumb.md` exists
+3. **Log** — If no crumb found, append to `~/.openclaw/gaps/gaps.md` with status `OPEN`
+
+### Gap Log Format
+
+```markdown
+| GAP-001 | script/new-automation.sh | OPEN | 2026-02-22 | - |
+```
+
+Fields: ID, Path, Status, Detected, Resolved
+
+### Configuration
+
+Gap detection is enabled by default. To disable:
+
+```bash
+export BAKER_GAP_DETECTION=false
+```
+
+### Baker SOUL.md Updates
+
+Add to Baker's Standing Directive:
+
+> **Rule 8: Gap Detection** — After each bake cycle, scan workspace for new components lacking breadcrumbs. Log any gaps to `~/.openclaw/gaps/gaps.md`.
+
+### Build Order Addition
+
+**Step 12: Verify Gap Detection**
+```bash
+# Check for new gaps
+cat ~/.openclaw/gaps/gaps.md
+
+# If gaps found, create crumbs for them
+# Then re-run Baker to confirm
+```
+
 *Version: 3.1 | Spec ID: `openclaw-breadcrumb-system`*
 *Audience: Any OpenClaw operator or agent implementing structured component documentation*
 *License: Share freely.*
